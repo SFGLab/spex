@@ -81,11 +81,10 @@ Notice the Spearman correlation coefficient increase from `0.8228` to `0.8569`.
 ## Further research
 Taking into consideration distant chromatin interactions improves the gene expression prediction. It has not escaped our notice that such phenomena can be used to benchmark and validate different Conformation Chromatin Capture (CCC) experiments and 3D chromatin modeling methods.
 
+## License
+The Expecto source code and resources are licensed according to the [`PRINCETON Academic Use SOFTWARE Agreement`](https://github.com/FunctionLab/ExPecto).
+
 ## References
 [^1]: Zhou, J., Theesfeld, C.L., Yao, K. _et al._ Deep learning sequence-based ab initio prediction of variant effects on expression and disease risk. Nat Genet 50, 1171–1179 (2018). https://doi.org/10.1038/s41588-018-0160-6
 
 [^2]: Adhikari, B., Trieu, T. & Cheng, J. Chromosome3D: reconstructing three-dimensional chromosomal structures from Hi-C interaction frequency data using distance geometry simulated annealing. BMC Genomics 17, 886 (2016). https://doi.org/10.1186/s12864-016-3210-4
-
-## License
-The Expecto source code and resources are licensed according to the [`PRINCETON Academic Use SOFTWARE Agreement`](https://github.com/FunctionLab/ExPecto).
-
