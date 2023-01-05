@@ -210,13 +210,12 @@ def generate_tensors(args):
                                                                            100*i/len(genes))
                 if hic_regions is None:
                     logging.info("No hic_regions")
-                    hic_tensor = expecto_regions_and_pos_weights(gene, args.window_size, args.bin_size, func_to_apply = lambda x: x)
+                    hic_regions, hic_pos_weights = expecto_regions_and_pos_weights(gene, args.window_size, args.bin_size, func_to_apply = lambda x: x)
                 else:
                     logging.info("Hic_regions present")
-                    hic_tensor = predict_regions_with_cache(args.pred_cache_folder, genome, model, cached_preds, hic_regions,
-                                                            args.window_size, args.features_count, args.batch_size, 
-                                                            args.compute_platform == "CUDA")
-
+                hic_tensor = predict_regions_with_cache(args.pred_cache_folder, genome, model, cached_preds, hic_regions,
+                                                        args.window_size, args.features_count, args.batch_size, 
+                                                        args.compute_platform == "CUDA")
                 hic_tensor = np.sum(hic_pos_weights[:, :, None]*hic_tensor[None, :, :], axis=1)
                 hic_tensor = hic_tensor.flatten()
                 tensor = np.concatenate([expecto_tensor, hic_tensor])
