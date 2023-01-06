@@ -87,8 +87,14 @@ def predict_regions_with_cache(pred_cache_folder, genome, model, cached_predicti
                      f" ({100*cache_used/len(regs_to_predict):.2f}%)")
     return tensor
 
+def naive_regions_and_pos_weights(gene, window_size, bin_size, span=20000):
+    regs_to_predict, pos_weights = expecto_regions_and_pos_weights(gene, window_size, bin_size, span)
+    pos_weights[True] = 1
 
-def expecto_regions_and_pos_weights(gene, window_size, bin_size, span=20000, func_to_apply=np.exp):
+    return regs_to_predict, pos_weights
+
+
+def expecto_regions_and_pos_weights(gene, window_size, bin_size, span=20000):
     regs_to_predict = list()
     pos_weight_shifts = np.array(list(range(-span, span, bin_size)))
     for shift in pos_weight_shifts:
@@ -97,16 +103,16 @@ def expecto_regions_and_pos_weights(gene, window_size, bin_size, span=20000, fun
         regs_to_predict.append(reg)
 
     pos_weights = np.vstack([
-        func_to_apply(-0.01*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
-        func_to_apply(-0.02*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
-        func_to_apply(-0.05*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
-        func_to_apply(-0.1*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
-        func_to_apply(-0.2*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
-        func_to_apply(-0.01*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0),
-        func_to_apply(-0.02*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0),
-        func_to_apply(-0.05*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0),
-        func_to_apply(-0.1*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0),
-        func_to_apply(-0.2*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0)])
+        np.exp(-0.01*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
+        np.exp(-0.02*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
+        np.exp(-0.05*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
+        np.exp(-0.1*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
+        np.exp(-0.2*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts <= 0),
+        np.exp(-0.01*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0),
+        np.exp(-0.02*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0),
+        np.exp(-0.05*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0),
+        np.exp(-0.1*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0),
+        np.exp(-0.2*np.abs(pos_weight_shifts)/200)*(pos_weight_shifts >= 0)])
 
     return regs_to_predict, pos_weights
 
@@ -210,7 +216,7 @@ def generate_tensors(args):
                                                                            100*i/len(genes))
                 if hic_regions is None:
                     logging.info("No hic_regions")
-                    hic_regions, hic_pos_weights = expecto_regions_and_pos_weights(gene, args.window_size, args.bin_size, func_to_apply = lambda x: 1)
+                    hic_regions, hic_pos_weights = naive_regions_and_pos_weights(gene, args.window_size, args.bin_size)
                 else:
                     logging.info("Hic_regions present")
                 hic_tensor = predict_regions_with_cache(args.pred_cache_folder, genome, model, cached_preds, hic_regions,
