@@ -87,10 +87,10 @@ def predict_regions_with_cache(pred_cache_folder, genome, model, cached_predicti
                      f" ({100*cache_used/len(regs_to_predict):.2f}%)")
     return tensor
 
-def naive_regions_and_pos_weights(gene, window_size, bin_size, span=20000):
+def naive_regions_and_pos_weights(gene, window_size, bin_size, span=20000): 
     regs_to_predict, pos_weights = expecto_regions_and_pos_weights(gene, window_size, bin_size, span)
     pos_weights[True] = 1
-
+    pos_weights = np.vstack([pos_weights[0], pos_weights[0]]) # we take only 2 positions to ensure same size of tensor as in case Hi-C was present; weights are 1 anyway so it doesn't matter what we take
     return regs_to_predict, pos_weights
 
 
