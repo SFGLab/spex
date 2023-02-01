@@ -87,6 +87,12 @@ def predict_regions_with_cache(pred_cache_folder, genome, model, cached_predicti
                      f" ({100*cache_used/len(regs_to_predict):.2f}%)")
     return tensor
 
+def naive_regions_and_pos_weights(gene, window_size, bin_size, span=20000): 
+    regs_to_predict, pos_weights = expecto_regions_and_pos_weights(gene, window_size, bin_size, span)
+    pos_weights[True] = 1
+    pos_weights = np.vstack([pos_weights[0], pos_weights[0]]) # we take only 2 positions to ensure same size of tensor as in case Hi-C was present; weights are 1 anyway so it doesn't matter what we take
+    return regs_to_predict, pos_weights
+
 
 def expecto_regions_and_pos_weights(gene, window_size, bin_size, span=20000):
     regs_to_predict = list()
@@ -133,7 +139,7 @@ def hic_regions_and_pos_weights(gene, mcools, hic_resolution, max_dist, bin_size
     logging.info(f"{gene.id} {gene.symbol} {gene.seqnames}:{gene.CAGE_representative_TSS} cnts: {len(counts)} {progress:.2f}%")
 
     if len(counts) == 0:
-        logging.info(f"{gene.id} No enough 3D data: {len(counts)} {progress:.2f}%")
+        logging.info(f"{gene.id} Not enough 3D data: {len(counts)} {progress:.2f}%")
         return None, None
 
     # determine seq positions and transformation
@@ -210,11 +216,12 @@ def generate_tensors(args):
                                                                            100*i/len(genes))
                 if hic_regions is None:
                     logging.info("No hic_regions")
-                    continue
+                    hic_regions, hic_pos_weights = naive_regions_and_pos_weights(gene, args.window_size, args.bin_size)
+                else:
+                    logging.info("Hic_regions present")
                 hic_tensor = predict_regions_with_cache(args.pred_cache_folder, genome, model, cached_preds, hic_regions,
                                                         args.window_size, args.features_count, args.batch_size, 
                                                         args.compute_platform == "CUDA")
-
                 hic_tensor = np.sum(hic_pos_weights[:, :, None]*hic_tensor[None, :, :], axis=1)
                 hic_tensor = hic_tensor.flatten()
                 tensor = np.concatenate([expecto_tensor, hic_tensor])
