@@ -3,11 +3,13 @@ import numpy as np
 import pandas as pd
 import logging
 import os.path
+import hashlib
 import xgboost as xgb
 from scipy.stats import spearmanr, pearsonr
 from sklearn.metrics import mean_squared_error
-import math
+import random
 from multiprocessing import Pool
+import math, sys
 
 from args import add_args, setup, is_mbp
 from configs import load_genes
@@ -17,7 +19,6 @@ from filenames import get_tensor_filename
 # workaround: https://github.com/dmlc/xgboost/issues/1715#issuecomment-420305786
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
 
 def get_no_filename_and_idx(genes, data_folder):
     i, nos_filenames_idxs = 0, list()
@@ -37,7 +38,7 @@ def read_tensor(no_filename_and_idx):
 
 def read_tensors(nos_filename_and_idx, data, dataind):
     n = 0
-    pool = Pool()
+    pool = Pool(8)
     for i, tensor, index in pool.imap(read_tensor, nos_filename_and_idx):
         data[i] = tensor
         n += 1
@@ -105,6 +106,14 @@ def train(dtrain, dtest, ytest, params, num_round, early_stopping_round):
 def nanstr(x):
     return "NaN" if math.isnan(x) else x
 
+def sha256sum(filename):
+    h  = hashlib.sha256()
+    b  = bytearray(128*1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        while n := f.readinto(mv):
+            h.update(mv[:n])
+    return h.hexdigest()
 
 def log_training(sm, pvalue, pr, pvalue2, rmse, train_n, test_n, args, xparams):
     if args.google_sheets_credentials_filename:
@@ -113,7 +122,7 @@ def log_training(sm, pvalue, pr, pvalue2, rmse, train_n, test_n, args, xparams):
         params = dict()
         for k, v in args.__dict__.items():
             if k.endswith("_filename") and v:
-                params[k] = sha256_sum(v)[:8] + "|" + v
+                params[k] = sha256sum(v)[:8] + "|" + v
             else:
                 params[k] = v
 
@@ -130,12 +139,13 @@ if __name__ == "__main__":
     setup(args)
 
     num_round, early_stopping_round = 2000, 50
+    
     default_params = {'booster': 'gbtree', 'objective': 'reg:squarederror', 'tree_method': 'hist' if is_mbp else 'gpu_hist',
                       'base_score': 2}
     params = {'alpha': 0.09838211642344241, 'colsample_bylevel': 0.7845488136664186, 'colsample_bynode': 0.3190626081646857,
               'colsample_bytree': 0.5898165366422254, 'eta': 0.051817108848631936, 'gamma': 0.4980984973194085,
               'lambda': 275.1911788945532, 'max_bin': 100, 'max_delta_step': 4.636511934158108, 'max_depth': 6,
-              'min_child_weight': 2.9990138316074377}
+              'min_child_weight': 2.9990138316074377, 'random_state': random.randint(-sys.maxsize-1, sys.maxsize)}
     all_params = {**default_params, **params}
 
     is_all_data, dtrain, dtest, ytest = read_train_data(args)
