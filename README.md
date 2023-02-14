@@ -15,8 +15,9 @@ Figure from [^1].
 
 The SpEx model extends ExPecto by incorporating the chromatin features which are spatially close to the gene TSS. The SpEx can use HiC and/or CHiA-PET experiments to calculate the spatial distance[^2] between gene loci. The chromatin features are grouped and summed based on the distance from the gene TSS and added to the input of regularized linear model (See Figure 2 & Figure 3).
 
-<p align="center">
-![Figure 2](docs/spex_fig2.png)
+
+<p align="center" width="100%">
+    <img alt="Figure 2" src="docs/spex_fig2.png">
 </p>
 
 ![Figure 3](docs/spex.png)
