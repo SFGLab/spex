@@ -7,7 +7,7 @@ SpEx is an extension to the ExPecto[^1] deep learning model predicting tissue sp
 _"The ExPecto sequence-based expression prediction framework includes three components that act sequentially. First, a deep neural network epigenomic effects model scans the long input sequence with a moving window and provides an output of predicted probabilities for histone marks, TFs and DNase hypersensitivity profiles at each spatial position. Then, a series of spatial transformation functions summarize each predicted spatial pattern of chromatin profiles to generate a reduced set of spatially transformed features. Lastly, the spatially transformed features are used to make tissue-specific predictions of expression for every gene by regularized linear models (See Figure 1)."[^1]_
 
 ![Figure 1](docs/expecto_fig1.jpg)
-Figure from [1].
+Figure from [^1].
 
 
 The SpEx model extends ExPecto by incorporating the chromatin features which are spatially close to the gene TSS. The SpEx can use HiC and/or CHiA-PET experiments to calculate the spatial distance[^2] between gene loci. The chromatin features are grouped and summed based on the distance from the gene TSS and added to the input of regularized linear model (See Figure 2 & Figure 3).
