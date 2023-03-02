@@ -20,6 +20,8 @@ from filenames import get_tensor_filename
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
+log_full_predictions = True
+
 def get_no_filename_and_idx(genes, data_folder):
     i, nos_filenames_idxs = 0, list()
     for gene in genes.itertuples():
@@ -55,6 +57,7 @@ def read_train_data(args):
 
     train_filenames_idxs = get_no_filename_and_idx(genes[genes.seqnames != "chr8"], args.data_folder)
     test_filenames_idxs = get_no_filename_and_idx(genes[genes.seqnames == "chr8"], args.data_folder)
+
     tensor_width = np.load(train_filenames_idxs[0][1]).shape[0]
     train = np.zeros(shape=(len(train_filenames_idxs), tensor_width))
     test = np.zeros(shape=(len(test_filenames_idxs), tensor_width))
@@ -66,7 +69,7 @@ def read_train_data(args):
     train_n = read_tensors(train_filenames_idxs, train, trainind)
     logging.info("Loading test tensors...")
     test_n = read_tensors(test_filenames_idxs, test, testind)
-
+    
     # loadig gene expression files
     geneexp = pd.read_csv(args.gene_expression_filename)
 
@@ -84,7 +87,9 @@ def read_train_data(args):
 
     ytest = np.asarray(np.log(geneexp.iloc[testind, args.target_index] + args.pseudocount))
 
-    return train_n + test_n == len(genes), dtrain, dtest, ytest
+    genes_ids = [x[2] for x in test_filenames_idxs]
+    
+    return train_n + test_n == len(genes), dtrain, dtest, ytest, genes.loc[testind][["id", "symbol"]]
 
 
 def train(dtrain, dtest, ytest, params, num_round, early_stopping_round):
@@ -100,7 +105,7 @@ def train(dtrain, dtest, ytest, params, num_round, early_stopping_round):
     sm = spearmanr(ypred, ytest)
     pr = pearsonr(ypred, ytest)
 
-    return rmse, sm.correlation, sm.pvalue, pr[0], pr[1], bst.best_iteration, bst
+    return rmse, sm.correlation, sm.pvalue, pr[0], pr[1], bst.best_iteration, bst, ypred, ytest
 
 
 def nanstr(x):
@@ -148,12 +153,18 @@ if __name__ == "__main__":
               'min_child_weight': 2.9990138316074377, 'random_state': random.randint(-sys.maxsize-1, sys.maxsize)}
     all_params = {**default_params, **params}
 
-    is_all_data, dtrain, dtest, ytest = read_train_data(args)
+    is_all_data, dtrain, dtest, ytest, test_genes = read_train_data(args)
 
-    rmse, sm_correlation, sm_pvalue, pr_correlation, pr_pvalue, best_iteration, bst = \
+    rmse, sm_correlation, sm_pvalue, pr_correlation, pr_pvalue, best_iteration, bst, ypred, ytest = \
         train(dtrain, dtest, ytest, all_params, num_round, early_stopping_round)
 
     logging.info(f"rmse: {rmse} spearman: {sm_correlation} pval: {sm_pvalue} pearson: {pr_correlation} pval: {pr_pvalue}")
+
+    if(log_full_predictions):
+        test_genes[args.log_note+'_ypred'] = ypred
+        test_genes[args.log_note+'_ytest'] = ytest
+        
+        test_genes.to_csv("predictions/"+args.log_note.replace("/", "_").replace(",", "_") + ".csv")
 
     log_training(nanstr(sm_correlation), nanstr(sm_pvalue), nanstr(pr_correlation), nanstr(pr_pvalue), nanstr(rmse),
                  dtrain.num_row(), dtest.num_row(), args,
