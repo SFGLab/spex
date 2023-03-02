@@ -1,3 +1,10 @@
+data/
+full_data*/
+mcools/
+mcools_cohesin/
+pred_cache*/
+__pycache__/
+log*
 *png
 *svg
 *csv*
