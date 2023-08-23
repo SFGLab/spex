@@ -93,9 +93,7 @@ The Expecto source code and resources are licensed according to the [`PRINCETON 
 
 ## Citation
 
-If you use ConsensuSV in your research, we kindly ask you to cite the following publication:
-
-The citation will be updated upon publication.
+If you use SpEx in your research, we kindly ask you to cite the following publication:
 
 ```
 @article{chilinski2023enhanced,
