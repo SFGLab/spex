@@ -91,6 +91,25 @@ Taking into consideration distant chromatin interactions improves the gene expre
 ## License
 The Expecto source code and resources are licensed according to the [`PRINCETON Academic Use SOFTWARE Agreement`](https://github.com/FunctionLab/ExPecto).
 
+## Citation
+
+If you use ConsensuSV in your research, we kindly ask you to cite the following publication:
+
+The citation will be updated upon publication.
+
+```
+@article{chilinski2023enhanced,
+  title={Enhanced performance of gene expression predictive models with protein-mediated spatial chromatin interactions},
+  author={Chili{\'n}ski, Mateusz and Lipi{\'n}ski, Jakub and Agarwal, Abhishek and Ruan, Yijun and Plewczynski, Dariusz},
+  journal={Scientific Reports},
+  volume={13},
+  number={1},
+  pages={11693},
+  year={2023},
+  publisher={Nature Publishing Group UK London}
+}
+```
+
 ## References
 [^1]: Zhou, J., Theesfeld, C.L., Yao, K. _et al._ Deep learning sequence-based ab initio prediction of variant effects on expression and disease risk. Nat Genet 50, 1171–1179 (2018). https://doi.org/10.1038/s41588-018-0160-6
 
